@@ -38,22 +38,22 @@
                     <input type="hidden" name="id" id="input-id">
                     <div class="mb-3">
                         <label class="form-label">Code</label>
-                        <input type="text" name="code" id="input-code" class="form-control">
+                        <input type="text" name="code" id="input-code" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Name</label>
-                        <input type="text" name="name" id="input-name" class="form-control">
+                        <input type="text" name="name" id="input-name" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Price</label>
-                        <input type="number" name="price" id="input-price" class="form-control">
+                        <input type="number" name="price" id="input-price" class="form-control" required>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Stock</label>
-                        <input type="number" name="stock" id="input-stock" class="form-control">
+                        <input type="number" name="stock" id="input-stock" class="form-control" required>
                     </div>
                 </div>
 

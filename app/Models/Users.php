@@ -49,11 +49,8 @@ class Users extends Model
     protected $fillable = [
         'name',
 		'email',
-		'phone',
 		'password',
-		'remember_token',
-		'role_id',
-		'is_suspend',
+		'role',
 		'created_at',
 		'updated_at',
 		'deleted_at',
@@ -74,7 +71,7 @@ class Users extends Model
      * @var array
      */
     protected $casts = [
-        'name' => 'string', 'email' => 'string', 'phone' => 'string', 'password' => 'string', 'remember_token' => 'string', 'role_id' => 'int', 'is_suspend' => 'int', 'created_at' => 'datetime', 'updated_at' => 'datetime', 'deleted_at' => 'datetime'
+        'name' => 'string', 'email' => 'string', 'password' => 'string', 'role' => 'string', 'created_at' => 'datetime', 'updated_at' => 'datetime', 'deleted_at' => 'datetime'
     ];
 
     /**
