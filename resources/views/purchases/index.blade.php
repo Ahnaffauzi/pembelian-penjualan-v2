@@ -60,7 +60,7 @@
         $('#purchasesTable').DataTable({
             processing:true,
             serverSide:true,
-            order: [[1, 'desc']],
+            order: [[0, 'desc']],
             ajax: {
                 url: "{{ url('/api/purchases_datatables') }}",
                 type: 'POST',

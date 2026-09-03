@@ -4,18 +4,71 @@
 
         <div class="navbar-nav">
             @role('SuperAdmin')
+                <a class="nav-link" href="/dashboard">Dashboard</a>
+
                 <a class="nav-link" href="/inventories">Inventories</a>
-                <a class="nav-link" href="/sales/create">Sales</a>
-                <a class="nav-link" href="/purchases">Purchases</a>
+
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Sales
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('sales.create') }}">Create Sales</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('sales.index') }}">Sales History</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Purchases
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('purchases.create') }}">Create Purchase</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('purchases.index') }}">Purchase History</a>
+                        </li>
+                    </ul>
+                </div>
+
                 <a class="nav-link" href="/reports">Reports</a>
             @endrole
 
             @role('Sales')
-                <a class="nav-link" href="/sales">Sales</a>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Sales
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('sales.create') }}">Create Sales</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('sales.index') }}">Sales History</a>
+                        </li>
+                    </ul>
+                </div>
             @endrole
 
             @role('Purchase')
-                <a class="nav-link" href="/purchases">Purchases</a>
+                <div class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                        Purchases
+                    </a>
+                    <ul class="dropdown-menu">
+                        <li>
+                            <a class="dropdown-item" href="{{ route('purchases.create') }}">Create Purchase</a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="{{ route('purchases.index') }}">Purchase History</a>
+                        </li>
+                    </ul>
+                </div>
             @endrole
 
             @role('Manager')
