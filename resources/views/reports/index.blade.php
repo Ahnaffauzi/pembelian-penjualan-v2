@@ -24,6 +24,7 @@
             <table id="salesReportTable" class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Number</th>
                         <th>Date</th>
                         <th>Cashier</th>
@@ -37,6 +38,7 @@
             <table id="purchaseReportTable" class="table table-bordered">
                 <thead>
                     <tr>
+                        <th>ID</th>
                         <th>Number</th>
                         <th>Date</th>
                         <th>Cashier</th>
@@ -85,7 +87,32 @@
             processing: true,
             serverSide: true,
             dom: 'Bfrtip',
-            buttons: ['excel', 'pdf', 'csv', 'print'],
+            buttons: [
+                {
+                    extend: 'excel',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                },
+                {
+                    extend: 'csv',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                },
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                }
+            ],
             order: [[0, 'desc']],
             ajax: {
                 url: "{{ url('/api/sales_datatables') }}",
@@ -112,7 +139,32 @@
             processing: true,
             serverSide: true,
             dom: 'Bfrtip',
-            buttons: ['excel', 'pdf', 'csv', 'print'],
+            buttons: [
+                {
+                    extend: 'excel',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                },
+                {
+                    extend: 'pdf',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                },
+                {
+                    extend: 'csv',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                },
+                {
+                    extend: 'print',
+                    exportOptions: {
+                        columns: [1, 2, 3]
+                    }
+                }
+            ],
             order: [[0, 'desc']],
             ajax: {
                 url: "{{ url('/api/purchases_datatables') }}",
