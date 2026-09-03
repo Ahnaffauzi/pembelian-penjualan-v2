@@ -102,6 +102,7 @@ class SalesDetails extends Model
                 'id' => ['column' => $model->table.'.id', 'alias' => 'id', 'type' => 'int'],
 				'sales_id' => ['column' => $model->table.'.sales_id', 'alias' => 'sales_id', 'type' => 'int'],
 				'inventory_id' => ['column' => $model->table.'.inventory_id', 'alias' => 'inventory_id', 'type' => 'int'],
+
                 // Additional fields from inventories table
                 'inventory_code' => ['column' => 'inventories.code', 'alias' => 'inventory_code', 'type' => 'string'],
                 'inventory_name' => ['column' => 'inventories.name', 'alias' => 'inventory_name', 'type' => 'string'],
@@ -113,9 +114,13 @@ class SalesDetails extends Model
 				'updated_at' => ['column' => $model->table.'.updated_at', 'alias' => 'updated_at', 'type' => 'date'],
             ],
             'join' => [
-                'type' => 'left',
-                'table' => 'inventories',
-                'on' => ['inventories.id', '=', 'sales_details.inventory_id']
+                [
+                    'type' => 'left',
+                    'table' => 'inventories',
+                    'on' => [
+                        ['inventories.id', '=', 'sales_details.inventory_id', false]
+                    ]
+                ]
             ],
             'where' => [
 

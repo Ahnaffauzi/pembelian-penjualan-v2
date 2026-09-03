@@ -8,12 +8,12 @@ use Illuminate\Http\Request;
 
 class SaleController extends Controller
 {
-    public function get(Request $request, $id = null)
+    public function get(Request $request, $id)
     {
         $params = $request->all();
 
         if ($id != null) {
-            $res = Sales::getById($id, $params, $request);
+            $res = Sales::getByIdWithDetails($id, $params, $request);
         } else if (isset($params['all']) && $params['all']) {
             $res = Sales::getAllResult($params, $request);
         } else {
@@ -67,7 +67,10 @@ class SaleController extends Controller
         $user = auth()->guard('sanctum')->user();
 
         $columns = [
-            'sales.id'
+            'sales.number',
+            'sales.date',
+            'users.name',
+            'sales.id',
         ];
 
         $dataOrder = [];
@@ -104,6 +107,7 @@ class SaleController extends Controller
                 $nestedData['action'] .= '&nbsp;';
                 $nestedData['action'] .= '<a href="#" class="btn btn-icon btn-danger" id="delete-data" data-id="'.$row['id'].'"><i class="fa fa-trash-o"></i></a>';
                 $nestedData['action'] .= '</div>';
+                $nestedData['action'] = '<button type="button" class="btn btn-sm btn-info detail-sale" data-id="'.$row['id'].'">Details</button>';
 
                 $data[] = $nestedData;
             }

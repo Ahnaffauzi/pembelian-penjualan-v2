@@ -101,12 +101,22 @@ class Sales extends Model
 				'number' => ['column' => $model->table.'.number', 'alias' => 'number', 'type' => 'string'],
 				'date' => ['column' => $model->table.'.date', 'alias' => 'date', 'type' => 'date'],
 				'user_id' => ['column' => $model->table.'.user_id', 'alias' => 'user_id', 'type' => 'int'],
+
+                // Additional fields from users table
+                'user_name' => ['column' => 'users.name', 'alias' => 'user_name', 'type' => 'string'],
+
 				'deleted_at' => ['column' => $model->table.'.deleted_at', 'alias' => 'deleted_at', 'type' => 'date'],
 				'created_at' => ['column' => $model->table.'.created_at', 'alias' => 'created_at', 'type' => 'date'],
 				'updated_at' => ['column' => $model->table.'.updated_at', 'alias' => 'updated_at', 'type' => 'date'],
             ],
             'join' => [
-
+                [
+                    'type' => 'left',
+                    'table' => 'users',
+                    'on' => [
+                        ['users.id', '=', 'sales.user_id', false]
+                    ]
+                ]
             ],
             'where' => [
 
@@ -122,6 +132,10 @@ class Sales extends Model
 
         $qry = ModelHelper::select($schema['field'], null, __CLASS__);
         ModelHelper::join($schema['join'], null, $qry);
+
+        if (!empty($filter)) {
+            ModelHelper::dynamicFilterAnd($filter, null, $qry, __CLASS__);
+        }
         
         //FILTER
 
@@ -365,7 +379,7 @@ class Sales extends Model
         }
     }
 
-    public static function getByIdWithDetails($id, $params = [], $request = null)
+    public static function getByIdWithDetails($id, $params, $request)
     {
         // Get sales header
         $sale = self::getById($id, $params, $request)->original;

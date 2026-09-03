@@ -14,15 +14,42 @@
 
         <thead>
             <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Price</th>
-                <th>Stock</th>
+                <th>Number</th>
+                <th>Date</th>
+                <th>Cashier</th>
                 <th>Action</th>
             </tr>
         </thead>
 
     </table>
+
+    <div class="modal fade" id="saleDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sale Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div id="saleDetailHeader" class="mb-3"></div>
+
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody id="saleDetailItems"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 
 @endsection
 
@@ -34,17 +61,68 @@
             processing:true,
             serverSide:true,
             ajax: {
-            url: "{{ url('/api/sales_datatables') }}",
-                // url: BASE_URL + '/api/' + endpoint + '_datatables',
-                type: 'POST'
+                url: "{{ url('/api/sales_datatables') }}",
+                type: 'POST',
+                data: function (d) {
+                    @if(auth()->user()->hasRole('Sales'))
+                        d.filter = {
+                            user_id: "{{ auth()->id() }}"
+                        };
+                    @endif
+                }
             },
             columns: [
                 { data: 'number' },
                 { data: 'date' },
-                { data: 'user_id' },
+                { data: 'user_name' },
                 { data: 'action', orderable: false, searchable: false }
             ]
         });
     });
+
+    $(document).on('click', '.detail-sale', function () {
+        let id = $(this).data('id');
+
+        $.ajax({
+            url: "{{ url('/api/sales') }}/" + id,
+            type: 'GET',
+            success: function (sale) {
+                $('#saleDetailHeader').html(`
+                    <strong>${sale.number}</strong><br>
+                    Date: ${sale.date}<br>
+                    Cashier: ${sale.user_name ?? sale.user_id}
+                `);
+
+                let html = '';
+                let total = 0;
+
+                sale.details.forEach(function (item) {
+                    let subtotal = item.qty * item.price;
+                    total += subtotal;
+
+                    html += `
+                        <tr>
+                            <td>${item.inventory_code}</td>
+                            <td>${item.inventory_name}</td>
+                            <td>${item.qty}</td>
+                            <td>Rp ${Number(item.price).toLocaleString('id-ID')}</td>
+                            <td>Rp ${Number(subtotal).toLocaleString('id-ID')}</td>
+                        </tr>
+                    `;
+                });
+
+                html += `
+                    <tr>
+                        <td colspan="4" class="text-end"><strong>Total</strong></td>
+                        <td><strong>Rp ${Number(total).toLocaleString('id-ID')}</strong></td>
+                    </tr>
+                `;
+
+                $('#saleDetailItems').html(html);
+                $('#saleDetailModal').modal('show');
+            }
+        });
+    });
+</script>
 
 @endpush
