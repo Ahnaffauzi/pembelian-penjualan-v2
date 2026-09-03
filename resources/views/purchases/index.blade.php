@@ -60,7 +60,7 @@
         $('#purchasesTable').DataTable({
             processing:true,
             serverSide:true,
-            order: [[0, 'desc']],
+            order: [[1, 'desc']],
             ajax: {
                 url: "{{ url('/api/purchases_datatables') }}",
                 type: 'POST',
@@ -70,11 +70,20 @@
                             user_id: "{{ auth()->id() }}"
                         };
                     @endif
-                }
+                },
             },
             columns: [
+                { data: 'id', visible: false },
                 { data: 'number' },
-                { data: 'date' },
+                { data: 'date',
+                    render: function (data) {
+                        return new Date(data).toLocaleDateString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                        });
+                    }
+                },
                 { data: 'user_name' },
                 { data: 'action', orderable: false, searchable: false }
             ]
