@@ -13,7 +13,7 @@ class PurchaseController extends Controller
         $params = $request->all();
 
         if ($id != null) {
-            $res = Purchases::getById($id, $params, $request);
+            $res = Purchases::getByIdWithDetails($id, $params, $request);
         } else if (isset($params['all']) && $params['all']) {
             $res = Purchases::getAllResult($params, $request);
         } else {
@@ -26,6 +26,9 @@ class PurchaseController extends Controller
     public function post(Request $request)
     {
         $params = $request->all();
+        if (isset($params['items'])) {
+            return Purchases::createOrder($params, $request);
+        }
         return Purchases::createOrUpdate($params, $request->method(), $request);
     }
 
@@ -62,7 +65,10 @@ class PurchaseController extends Controller
         $user = auth()->guard('sanctum')->user();
 
         $columns = [
-            'purchases.id'
+            'purchases.number',
+            'purchases.date',
+            'users.name',
+            'purchases.id',
         ];
 
         $dataOrder = [];
@@ -99,6 +105,7 @@ class PurchaseController extends Controller
                 $nestedData['action'] .= '&nbsp;';
                 $nestedData['action'] .= '<a href="#" class="btn btn-icon btn-danger" id="delete-data" data-id="'.$row['id'].'"><i class="fa fa-trash-o"></i></a>';
                 $nestedData['action'] .= '</div>';
+                $nestedData['action'] = '<button type="button" class="btn btn-sm btn-info detail-purchase" data-id="'.$row['id'].'">Details</button>';
 
                 $data[] = $nestedData;
             }

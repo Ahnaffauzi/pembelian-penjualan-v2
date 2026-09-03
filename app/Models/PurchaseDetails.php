@@ -102,6 +102,11 @@ class PurchaseDetails extends Model
                 'id' => ['column' => $model->table.'.id', 'alias' => 'id', 'type' => 'int'],
 				'purchase_id' => ['column' => $model->table.'.purchase_id', 'alias' => 'purchase_id', 'type' => 'int'],
 				'inventory_id' => ['column' => $model->table.'.inventory_id', 'alias' => 'inventory_id', 'type' => 'int'],
+
+                // Additional fields from inventories table
+                'inventory_code' => ['column' => 'inventories.code', 'alias' => 'inventory_code', 'type' => 'string'],
+                'inventory_name' => ['column' => 'inventories.name', 'alias' => 'inventory_name', 'type' => 'string'],
+
 				'qty' => ['column' => $model->table.'.qty', 'alias' => 'qty', 'type' => 'int'],
 				'price' => ['column' => $model->table.'.price', 'alias' => 'price', 'type' => 'int'],
 				'deleted_at' => ['column' => $model->table.'.deleted_at', 'alias' => 'deleted_at', 'type' => 'date'],
@@ -109,7 +114,13 @@ class PurchaseDetails extends Model
 				'updated_at' => ['column' => $model->table.'.updated_at', 'alias' => 'updated_at', 'type' => 'date'],
             ],
             'join' => [
-
+                [
+                    'type' => 'left',
+                    'table' => 'inventories',
+                    'on' => [
+                        ['inventories.id', '=', 'purchase_details.inventory_id', false]
+                    ]
+                ]
             ],
             'where' => [
 
@@ -303,5 +314,18 @@ class PurchaseDetails extends Model
             'message' => 'Succesfully Approved Data',
             'data' => null
         ]);
+    }
+
+    public static function getByPurchaseId($purchaseId, $request = null)
+    {
+        $schema = self::mapSchema();
+
+        // Generate select query from ModelHelper
+        $db = ModelHelper::select($schema['field'], $request, __CLASS__)->where('purchase_details.purchase_id', $purchaseId);
+        
+        // Add join for invetories table to get inventory_code and inventory_name
+        ModelHelper::join($schema['join'], $request, $db);
+
+        return $db->get();
     }
 }

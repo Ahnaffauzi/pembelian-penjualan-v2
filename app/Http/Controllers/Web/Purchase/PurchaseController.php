@@ -11,4 +11,9 @@ class PurchaseController extends Controller
     {
         return view('purchases.index');
     }
+
+    public function create()
+    {
+        return view('purchases.create');
+    }
 }

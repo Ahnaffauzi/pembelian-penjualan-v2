@@ -101,11 +101,22 @@ class Purchases extends Model
 				'number' => ['column' => $model->table.'.number', 'alias' => 'number', 'type' => 'string'],
 				'date' => ['column' => $model->table.'.date', 'alias' => 'date', 'type' => 'date'],
 				'user_id' => ['column' => $model->table.'.user_id', 'alias' => 'user_id', 'type' => 'int'],
+
+                // Additional fields from users table
+                'user_name' => ['column' => 'users.name', 'alias' => 'user_name', 'type' => 'string'],
+
 				'deleted_at' => ['column' => $model->table.'.deleted_at', 'alias' => 'deleted_at', 'type' => 'date'],
 				'created_at' => ['column' => $model->table.'.created_at', 'alias' => 'created_at', 'type' => 'date'],
 				'updated_at' => ['column' => $model->table.'.updated_at', 'alias' => 'updated_at', 'type' => 'date'],
             ],
             'join' => [
+                [
+                    'type' => 'left',
+                    'table' => 'users',
+                    'on' => [
+                        ['users.id', '=', 'purchases.user_id', false]
+                    ]
+                ]
 
             ],
             'where' => [
@@ -122,6 +133,10 @@ class Purchases extends Model
 
         $qry = ModelHelper::select($schema['field'], null, __CLASS__);
         ModelHelper::join($schema['join'], null, $qry);
+
+        if (!empty($filter)) {
+            ModelHelper::dynamicFilterAnd($filter, null, $qry, __CLASS__);
+        }
         
         //FILTER
 
@@ -307,28 +322,31 @@ class Purchases extends Model
         $date = date('Ymd');
         $count = self::whereDate('created_at', date('Y-m-d'))->count() + 1;
 
-        return 'PUR-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
+        return 'PO-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
     }
 
     public static function createOrder($params, $request)
     {
-        DB::beginTranscation();
+        DB::beginTransaction();
 
         try {
             $purchase = self::create([
                 'number' => self::generateNumber(),
                 'date' => $params['date'],
-                'user_id' => auth()->id(),
+                'user_id' => $params['user_id'],
             ]);
 
             foreach ($params['items'] as $item) {
-                Inventories::increaseStock($item['inventory_id'], $item['qty']);
+
+                $inventory = Inventories::findOrFail($item['inventory_id']);
+
+                Inventories::increaseStock($inventory, $item['qty']);
 
                 PurchaseDetails::create([
                     'purchase_id' => $purchase->id,
                     'inventory_id' => $item['inventory_id'],
                     'qty' => $item['qty'],
-                    'price' => $item['price'],
+                    'price' => $inventory->price,
                 ]);
             }
 
@@ -347,5 +365,16 @@ class Purchases extends Model
                 'message' => $e->getMessage(),
             ], 422);
         }
+    }
+
+    public static function getByIdWithDetails($id, $params, $request)
+    {
+        // Get purchase header
+        $purchase = self::getById($id, $params, $request)->original;
+
+        // Get purchase details
+        $purchase->details = PurchaseDetails::getByPurchaseId($id, $request);
+
+        return response()->json($purchase);
     }
 }
