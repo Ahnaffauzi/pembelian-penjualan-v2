@@ -28,6 +28,8 @@
                         <th>Number</th>
                         <th>Date</th>
                         <th>Cashier</th>
+                        <th>Total Qty</th>
+                        <th>Total Amount</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -42,6 +44,8 @@
                         <th>Number</th>
                         <th>Date</th>
                         <th>Cashier</th>
+                        <th>Total Qty</th>
+                        <th>Total Amount</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -91,25 +95,25 @@
                 {
                     extend: 'excel',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 },
                 {
                     extend: 'pdf',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 },
                 {
                     extend: 'csv',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 },
                 {
                     extend: 'print',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 }
             ],
@@ -131,6 +135,13 @@
                     }
                 },
                 { data: 'user_name' },
+                { data: 'total_qty' },
+                {
+                    data: 'total_amount',
+                    render: function (data) {
+                        return 'Rp ' + Number(data).toLocaleString('id-ID');
+                    }
+                },
                 { data: 'action', orderable: false, searchable: false }
             ]
         });
@@ -143,25 +154,25 @@
                 {
                     extend: 'excel',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 },
                 {
                     extend: 'pdf',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 },
                 {
                     extend: 'csv',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 },
                 {
                     extend: 'print',
                     exportOptions: {
-                        columns: [1, 2, 3]
+                        columns: [1, 2, 3, 4, 5]
                     }
                 }
             ],
@@ -183,6 +194,13 @@
                     }
                 },
                 { data: 'user_name' },
+                { data: 'total_qty' },
+                {
+                    data: 'total_amount',
+                    render: function (data) {
+                        return 'Rp ' + Number(data).toLocaleString('id-ID');
+                    }
+                },
                 { data: 'action', orderable: false, searchable: false }
             ]
         });

@@ -70,6 +70,8 @@ class SaleController extends Controller
             'sales.number',
             'sales.date',
             'users.name',
+            'total_qty',
+            'total_amount',
             'sales.id',
         ];
 

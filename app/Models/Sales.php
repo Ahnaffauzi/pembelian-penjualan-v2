@@ -105,6 +105,20 @@ class Sales extends Model
                 // Additional fields from users table
                 'user_name' => ['column' => 'users.name', 'alias' => 'user_name', 'type' => 'string'],
 
+                // Additional fields for total quantity and total amount
+                'total_qty' => [
+                    'column' => 'COALESCE(SUM(sales_details.qty), 0)',
+                    'alias' => 'total_qty',
+                    'type' => 'int',
+                    'is_raw' => true
+                ],
+                'total_amount' => [
+                    'column' => 'COALESCE(SUM(sales_details.qty * sales_details.price), 0)',
+                    'alias' => 'total_amount',
+                    'type' => 'int',
+                    'is_raw' => true
+                ],
+
 				'deleted_at' => ['column' => $model->table.'.deleted_at', 'alias' => 'deleted_at', 'type' => 'date'],
 				'created_at' => ['column' => $model->table.'.created_at', 'alias' => 'created_at', 'type' => 'date'],
 				'updated_at' => ['column' => $model->table.'.updated_at', 'alias' => 'updated_at', 'type' => 'date'],
@@ -115,6 +129,13 @@ class Sales extends Model
                     'table' => 'users',
                     'on' => [
                         ['users.id', '=', 'sales.user_id', false]
+                    ]
+                ],
+                [
+                    'type' => 'left',
+                    'table' => 'sales_details',
+                    'on' => [
+                        ['sales_details.sales_id', '=', 'sales.id', false]
                     ]
                 ]
             ],
@@ -174,6 +195,9 @@ class Sales extends Model
                 $qry->orderBy($row['column'], $row['dir']);
             }
         }
+
+        // Group by sales.id and users.name to avoid duplicate rows due to the join with sales_details
+        $qry->groupBy('sales.id', 'users.name');
 
         return [
             'data' => $qry->get(),

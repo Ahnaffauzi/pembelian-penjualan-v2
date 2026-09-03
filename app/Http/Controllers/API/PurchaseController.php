@@ -68,6 +68,8 @@ class PurchaseController extends Controller
             'purchases.number',
             'purchases.date',
             'users.name',
+            'total_qty',
+            'total_amount',
             'purchases.id',
         ];
 

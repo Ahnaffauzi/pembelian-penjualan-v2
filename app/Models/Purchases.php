@@ -105,6 +105,20 @@ class Purchases extends Model
                 // Additional fields from users table
                 'user_name' => ['column' => 'users.name', 'alias' => 'user_name', 'type' => 'string'],
 
+                // Additional fields from purchase_details table
+                'total_qty' => [
+                    'column' => 'COALESCE(SUM(purchase_details.qty), 0)',
+                    'alias' => 'total_qty',
+                    'type' => 'int',
+                    'is_raw' => true
+                ],
+                'total_amount' => [
+                    'column' => 'COALESCE(SUM(purchase_details.qty * purchase_details.price), 0)',
+                    'alias' => 'total_amount',
+                    'type' => 'int',
+                    'is_raw' => true
+                ],
+
 				'deleted_at' => ['column' => $model->table.'.deleted_at', 'alias' => 'deleted_at', 'type' => 'date'],
 				'created_at' => ['column' => $model->table.'.created_at', 'alias' => 'created_at', 'type' => 'date'],
 				'updated_at' => ['column' => $model->table.'.updated_at', 'alias' => 'updated_at', 'type' => 'date'],
@@ -116,8 +130,14 @@ class Purchases extends Model
                     'on' => [
                         ['users.id', '=', 'purchases.user_id', false]
                     ]
+                ],
+                [
+                    'type' => 'left',
+                    'table' => 'purchase_details',
+                    'on' => [
+                        ['purchase_details.purchase_id', '=', 'purchases.id', false]
+                    ]
                 ]
-
             ],
             'where' => [
 
@@ -175,6 +195,9 @@ class Purchases extends Model
                 $qry->orderBy($row['column'], $row['dir']);
             }
         }
+
+        // Group by purchases.id and users.name to ensure correct aggregation of total_qty and total_amount
+        $qry->groupBy('purchases.id', 'users.name');
 
         return [
             'data' => $qry->get(),
