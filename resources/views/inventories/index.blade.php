@@ -75,10 +75,11 @@
 @push('scripts')
 
 <script>
-    console.log('Inventory page loaded');
-    let endpoint = 'inventories';
+    // console.log('Inventory page loaded');
+    // let endpoint = 'inventories';
 
     $(document).ready(function () {
+        // Initialize DataTable
         $('#inventoriesTable').DataTable({
             processing:true,
             serverSide:true,

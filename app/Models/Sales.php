@@ -255,6 +255,14 @@ class Sales extends Model
             unset($params['_token']);
         }
 
+        if (empty($params['number'])) {
+            $params['number'] = self::generateNumber();
+        }
+
+        if (empty($params['user_id'])) {
+            $params['user_id'] = auth()->id();
+        }
+
         if (isset($params['id']) && $params['id']) {
             $old = self::getById($params['id'])->original;
 
@@ -312,23 +320,31 @@ class Sales extends Model
 
     public static function createOrder($params, $request)
     {
-        DB::beginTranscation();
+        DB::beginTransaction();
 
         try {
+            $userId = auth()->id() ?? ($params['user_id'] ?? null);
+
+            if (!$userId) {
+                throw new \Exception('User is required to create sale');
+            }
+
             $sale = self::create([
                 'number' => self::generateNumber(),
                 'date' => $params['date'],
-                'user_id' => auth()->id(),
+                'user_id' => $userId,
             ]);
 
             foreach ($params['items'] as $item) {
-                Inventories::decreaseStock($item['inventory_id'], $item['qty']);
+                $inventory = Inventories::findOrFail($item['inventory_id']);
+
+                Inventories::decreaseStock($inventory->id, $item['qty']);
 
                 SalesDetails::create([
                     'sales_id' => $sale->id,
-                    'inventory_id' => $item['inventory_id'],
+                    'inventory_id' => $inventory->id,
                     'qty' => $item['qty'],
-                    'price' => $item['price'],
+                    'price' => $inventory->price,
                 ]);
             }
 

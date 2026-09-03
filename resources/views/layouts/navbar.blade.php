@@ -5,7 +5,7 @@
         <div class="navbar-nav">
             @role('SuperAdmin')
                 <a class="nav-link" href="/inventories">Inventories</a>
-                <a class="nav-link" href="/sales">Sales</a>
+                <a class="nav-link" href="/sales/create">Sales</a>
                 <a class="nav-link" href="/purchases">Purchases</a>
                 <a class="nav-link" href="/reports">Reports</a>
             @endrole

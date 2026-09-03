@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [UserController::class, 'login']);
 
+
 Route::controller(UserController::class)->group(function() {
     Route::get('users/{id?}', 'get')->name('get.users');
     Route::post('users', 'post')->name('post.users');
@@ -116,5 +117,6 @@ Route::controller(PurchaseDetailController::class)->group(function() {
     Route::post('purchase_details_datatables', 'datatables')->name('datatable.purchase_details');
     Route::patch('purchase_details/{id}/approve', 'approve')->name('approve.purchase_details');
 });
+
 // ---- Route Controller Generator ----
 

@@ -11,4 +11,9 @@ class SaleController extends Controller
     {
         return view('sales.index');
     }
+
+    public function create()
+    {
+        return view('sales.create');
+    }
 }

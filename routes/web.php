@@ -26,7 +26,8 @@ Route::middleware(['auth', 'role:SuperAdmin'])->group(function () {
 });
 
 Route::middleware(['auth', 'role:SuperAdmin|Sales'])->group(function () {
-    Route::get('/sales', [SaleController::class, 'index']);
+    Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
+    Route::get('/sales/create', [SaleController::class, 'create'])->name('sales.create');
 });
 
 Route::middleware(['auth', 'role:SuperAdmin|Purchase'])->group(function () {

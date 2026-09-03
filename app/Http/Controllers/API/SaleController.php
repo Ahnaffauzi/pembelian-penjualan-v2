@@ -26,6 +26,11 @@ class SaleController extends Controller
     public function post(Request $request)
     {
         $params = $request->all();
+
+        if (isset($params['items'])) {
+            return Sales::createOrder($params, $request);
+        }
+
         return Sales::createOrUpdate($params, $request->method(), $request);
     }
 
