@@ -76,14 +76,55 @@
 @push('scripts')
 
 <script>
+    let dt;
     let endpoint = 'inventories';
 
-    $(document).ready(function () {
-        // Initialize DataTable
-        $('#inventoriesTable').DataTable({
-            processing:true,
-            serverSide:true,
-            order: [[0, 'desc']],
+    function drawDatatable() {
+        dt = $('#inventoriesTable').addClass('nowrap').DataTable({
+            dom:
+                "<'row mb-3'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row mt-3'<'col-md-5'i><'col-md-4'p><'col-md-3 text-end'l>>",
+            buttons: [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-success border-0',
+                    text: 'Copy',
+                    exportOptions: { columns: [1, 2, 3, 4] }
+                },
+                {
+                    extend: 'csv',
+                    className: 'btn btn-info border-0',
+                    text: 'CSV',
+                    exportOptions: { columns: [1, 2, 3, 4] }
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-warning border-0',
+                    text: 'Excel',
+                    exportOptions: { columns: [1, 2, 3, 4] }
+                },
+                {
+                    extend: 'pdf',
+                    className: 'btn btn-danger border-0',
+                    text: 'PDF',
+                    exportOptions: { columns: [1, 2, 3, 4] }
+                },
+                {
+                    extend: 'print',
+                    className: 'btn btn-secondary border-0',
+                    text: 'Print',
+                    exportOptions: { columns: [1, 2, 3, 4] }
+                }
+            ],
+            destroy: true,
+            pageLength: 10,
+            processing: true,
+            serverSide: true,
+            responsive: false,
+            scrollX: true,
+            scrollCollapse: false,
+            scrollY: '50vh',
             ajax: {
                 url: BASE_URL + '/api/' + endpoint + '_datatables',
                 type: 'POST'
@@ -120,6 +161,10 @@
                 }
             ]
         });
+    }
+
+    $(document).ready(function () {
+        drawDatatable();
     });
 
     $(document).on('click', '#add-button', function () {
@@ -161,7 +206,7 @@
             success: function (response) {
                 $('#inventoryModal').modal('hide');
                 $('#inventoryForm')[0].reset();
-                $('#inventoriesTable').DataTable().ajax.reload();
+                dt.ajax.reload(null, false);
 
                 Swal.fire('Success', response.message, 'success');
             }
@@ -184,7 +229,7 @@
                     url: BASE_URL + '/api/' + endpoint + '/' + id,
                     type: 'DELETE',
                     success: function (response) {
-                        $('#inventoriesTable').DataTable().ajax.reload();
+                        dt.ajax.reload(null, false);
 
                         Swal.fire({
                             icon: 'success',

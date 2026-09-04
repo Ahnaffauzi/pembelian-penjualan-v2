@@ -93,33 +93,46 @@
         $('#salesReportTable').DataTable({
             processing: true,
             serverSide: true,
-            dom: 'Bfrtip',
+            dom:
+                "<'row mb-3'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row mt-3'<'col-md-5'i><'col-md-4'p><'col-md-3 text-end'l>>",
             buttons: [
                 {
-                    extend: 'excel',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
+                    extend: 'copy',
+                    className: 'btn btn-success border-0',
+                    text: 'Copy',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
                 },
                 {
                     extend: 'csv',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
+                    className: 'btn btn-info border-0',
+                    text: 'CSV',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-warning border-0',
+                    text: 'Excel',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
+                },
+                {
+                    extend: 'pdf',
+                    className: 'btn btn-danger border-0',
+                    text: 'PDF',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
                 },
                 {
                     extend: 'print',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
+                    className: 'btn btn-secondary border-0',
+                    text: 'Print',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
                 }
             ],
+            destroy: true,
+            pageLength: 10,
+            responsive: false,
+            scrollX: true,
             order: [[0, 'desc']],
             ajax: {
                 url: BASE_URL + '/api/' + sales_endpoint + '_datatables',
@@ -152,33 +165,46 @@
         $('#purchaseReportTable').DataTable({
             processing: true,
             serverSide: true,
-            dom: 'Bfrtip',
+            dom:
+                "<'row mb-3'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row mt-3'<'col-md-5'i><'col-md-4'p><'col-md-3 text-end'l>>",
             buttons: [
                 {
-                    extend: 'excel',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
+                    extend: 'copy',
+                    className: 'btn btn-success border-0',
+                    text: 'Copy',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
                 },
                 {
                     extend: 'csv',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
+                    className: 'btn btn-info border-0',
+                    text: 'CSV',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-warning border-0',
+                    text: 'Excel',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
+                },
+                {
+                    extend: 'pdf',
+                    className: 'btn btn-danger border-0',
+                    text: 'PDF',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
                 },
                 {
                     extend: 'print',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5]
-                    }
+                    className: 'btn btn-secondary border-0',
+                    text: 'Print',
+                    exportOptions: { columns: [1, 2, 3, 4, 5] }
                 }
             ],
+            destroy: true,
+            pageLength: 10,
+            responsive: false,
+            scrollX: true,
             order: [[0, 'desc']],
             ajax: {
                 url: BASE_URL + '/api/' + purchases_endpoint + '_datatables',

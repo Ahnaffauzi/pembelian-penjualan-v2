@@ -14,6 +14,7 @@
 
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Number</th>
                 <th>Date</th>
                 <th>Cashier</th>
@@ -63,6 +64,46 @@
         $('#salesTable').DataTable({
             processing:true,
             serverSide:true,
+            dom:
+                "<'row mb-3'<'col-md-6'B><'col-md-6'f>>" +
+                "<'row'<'col-12'tr>>" +
+                "<'row mt-3'<'col-md-5'i><'col-md-4'p><'col-md-3 text-end'l>>",
+            buttons: [
+                {
+                    extend: 'copy',
+                    className: 'btn btn-success border-0',
+                    text: 'Copy',
+                    exportOptions: { columns: [1, 2, 3] }
+                },
+                {
+                    extend: 'csv',
+                    className: 'btn btn-info border-0',
+                    text: 'CSV',
+                    exportOptions: { columns: [1, 2, 3] }
+                },
+                {
+                    extend: 'excel',
+                    className: 'btn btn-warning border-0',
+                    text: 'Excel',
+                    exportOptions: { columns: [1, 2, 3] }
+                },
+                {
+                    extend: 'pdf',
+                    className: 'btn btn-danger border-0',
+                    text: 'PDF',
+                    exportOptions: { columns: [1, 2, 3] }
+                },
+                {
+                    extend: 'print',
+                    className: 'btn btn-secondary border-0',
+                    text: 'Print',
+                    exportOptions: { columns: [1, 2, 3] }
+                }
+            ],
+            destroy: true,
+            pageLength: 10,
+            responsive: false,
+            scrollX: true,
             order: [[0, 'desc']],
             ajax: {
                 url: BASE_URL + '/api/' + endpoint + '_datatables',
