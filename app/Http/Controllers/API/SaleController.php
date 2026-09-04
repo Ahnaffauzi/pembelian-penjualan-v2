@@ -67,6 +67,7 @@ class SaleController extends Controller
         $user = auth()->guard('sanctum')->user();
 
         $columns = [
+            'sales.id',
             'sales.number',
             'sales.date',
             'users.name',

@@ -205,10 +205,22 @@
                 type: 'POST'
             },
             columns: [
-                { data: 'code' },
-                { data: 'name' },
-                { data: 'price' },
-                { data: 'stock' },
+                { 
+                    data: 'code', 
+                    name: 'code'
+                },
+                { 
+                    data: 'name', 
+                    name: 'name' 
+                },
+                { 
+                    data: 'price', 
+                    name: 'price' 
+                },
+                { 
+                    data: 'stock', 
+                    name: 'stock' 
+                },
                 {
                     data: null,
                     orderable: false,

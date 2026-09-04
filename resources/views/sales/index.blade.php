@@ -37,6 +37,7 @@
                     <table class="table table-bordered">
                         <thead>
                             <tr>
+                                <th>ID</th>
                                 <th>Code</th>
                                 <th>Item</th>
                                 <th>Qty</th>
@@ -75,9 +76,19 @@
                 }
             },
             columns: [
-                { data: 'id', visible: false },
-                { data: 'number' },
-                { data: 'date',
+                {
+                    data: 'id',
+                    name: 'id',
+                    width: '5%',
+                    "visible": false
+                },
+                {
+                    data: 'number',
+                    name: 'number'
+                },
+                {
+                    data: 'date',
+                    name: 'date',
                     render: function (data) {
                         return new Date(data).toLocaleDateString('id-ID', {
                             day: '2-digit',
@@ -86,8 +97,17 @@
                         });
                     }
                 },
-                { data: 'user_name' },
-                { data: 'action', orderable: false, searchable: false }
+                {
+                    data: 'user_name',
+                    name: 'user_name'
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-end'
+                }
             ]
         });
     });

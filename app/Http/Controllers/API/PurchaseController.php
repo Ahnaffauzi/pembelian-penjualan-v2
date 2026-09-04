@@ -65,6 +65,7 @@ class PurchaseController extends Controller
         $user = auth()->guard('sanctum')->user();
 
         $columns = [
+            'purchases.id',
             'purchases.number',
             'purchases.date',
             'users.name',

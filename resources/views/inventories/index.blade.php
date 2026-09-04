@@ -14,6 +14,7 @@
 
         <thead>
             <tr>
+                <th>ID</th>
                 <th>Code</th>
                 <th>Name</th>
                 <th>Price</th>
@@ -75,7 +76,6 @@
 @push('scripts')
 
 <script>
-    // console.log('Inventory page loaded');
     let endpoint = 'inventories';
 
     $(document).ready(function () {
@@ -83,16 +83,41 @@
         $('#inventoriesTable').DataTable({
             processing:true,
             serverSide:true,
+            order: [[0, 'desc']],
             ajax: {
                 url: BASE_URL + '/api/' + endpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
-                { data: 'code' },
-                { data: 'name' },
-                { data: 'price' },
-                { data: 'stock' },
-                { data: 'action', orderable: false, searchable: false }
+                {
+                    data: 'id',
+                    name: 'id',
+                    width: '5%',
+                    "visible": false
+                },
+                {
+                    data: 'code',
+                    name: 'code'
+                },
+                {
+                    data: 'name',
+                    name: 'name'
+                },
+                {
+                    data: 'price',
+                    name: 'price'
+                },
+                {
+                    data: 'stock',
+                    name: 'stock'
+                },
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-end'
+                }
             ]
         });
     });

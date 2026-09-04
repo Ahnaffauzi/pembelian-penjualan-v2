@@ -62,6 +62,7 @@ class InventoryController extends Controller
         $user = auth()->guard('sanctum')->user();
 
         $columns = [
+            'inventories.id',
             'inventories.code',
             'inventories.name',
             'inventories.price',
