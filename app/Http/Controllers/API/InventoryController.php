@@ -98,11 +98,16 @@ class InventoryController extends Controller
             foreach ($res['data'] as $row) {
                 $nestedData = $row;
                 $nestedData['action'] = '';
-                $nestedData['action'] .= '<div class="actions">';
-                $nestedData['action'] .= '<a href="#" class="btn btn-icon btn-warning" id="edit-data" data-id="'.$row['id'].'"><i class="fa fa-pencil"></i></a>';
-                $nestedData['action'] .= '&nbsp;';
-                $nestedData['action'] .= '<a href="#" class="btn btn-icon btn-danger" id="delete-data" data-id="'.$row['id'].'"><i class="fa fa-trash-o"></i></a>';
+                $nestedData['action'] .= '<div class="dropdown">';
+                $nestedData['action'] .= '<button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="dropdown">';
+                $nestedData['action'] .= '<i class="fa fa-ellipsis-h"></i>';
+                $nestedData['action'] .= '</button>';
+                $nestedData['action'] .= '<ul class="dropdown-menu dropdown-menu-end">';
+                $nestedData['action'] .= '<li><a href="#" class="dropdown-item edit-data" data-id="'.$row['id'].'">Edit</a></li>';
+                $nestedData['action'] .= '<li><a href="#" class="dropdown-item text-danger delete-data" data-id="'.$row['id'].'">Delete</a></li>';
+                $nestedData['action'] .= '</ul>';
                 $nestedData['action'] .= '</div>';
+
 
                 $data[] = $nestedData;
             }

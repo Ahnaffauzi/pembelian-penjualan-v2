@@ -105,7 +105,7 @@
         $('#inventoryModal').modal('show');
     });
 
-    $(document).on('click', '#edit-data', function (e) {
+    $(document).on('click', '.edit-data', function (e) {
         e.preventDefault();
 
         let id = $(this).data('id');
@@ -143,7 +143,7 @@
             }
         });
     });
-    $(document).on('click', '#delete-data', function (e) {
+    $(document).on('click', '.delete-data', function (e) {
         e.preventDefault();
 
         let id = $(this).data('id');
