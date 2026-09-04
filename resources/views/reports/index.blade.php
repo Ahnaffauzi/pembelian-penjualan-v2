@@ -86,6 +86,9 @@
 @push('scripts')
 
 <script>
+    let sales_endpoint = 'sales';
+    let purchases_endpoint = 'purchases';
+
     $(document).ready(function () {
         $('#salesReportTable').DataTable({
             processing: true,
@@ -119,7 +122,7 @@
             ],
             order: [[0, 'desc']],
             ajax: {
-                url: "{{ url('/api/sales_datatables') }}",
+                url: BASE_URL + '/api/' + sales_endpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
@@ -178,7 +181,7 @@
             ],
             order: [[0, 'desc']],
             ajax: {
-                url: "{{ url('/api/purchases_datatables') }}",
+                url: BASE_URL + '/api/' + purchases_endpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
@@ -207,11 +210,11 @@
     });
 
     $(document).on('click', '.detail-sale', function () {
-        loadReportDetail("{{ url('/api/sales') }}/" + $(this).data('id'));
+        loadReportDetail(BASE_URL + '/api/' + sales_endpoint + '/' + $(this).data('id'));
     });
 
     $(document).on('click', '.detail-purchase', function () {
-        loadReportDetail("{{ url('/api/purchases') }}/" + $(this).data('id'));
+        loadReportDetail(BASE_URL + '/api/' + purchases_endpoint + '/' + $(this).data('id'));
     });
 
     function loadReportDetail(url) {

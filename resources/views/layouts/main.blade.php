@@ -28,7 +28,7 @@
     </head>
 
     <script type="text/javascript">
-    let BASE_URL = '{{ env('APP_URL') }}';
+    let BASE_URL = '{{ url('/') }}';
     </script>
 
     <body>

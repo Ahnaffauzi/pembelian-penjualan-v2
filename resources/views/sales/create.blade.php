@@ -99,6 +99,9 @@
 
 <script>
 
+    let endpoint = 'sales';
+    let inventory_endpoint = 'inventories';
+
     let cartItems = [];
 
     function formatRupiah(value) {
@@ -205,8 +208,7 @@
             serverSide:true,
             dom: 'lrtip',
             ajax: {
-            url: "{{ url('/api/inventories_datatables') }}",
-                // url: BASE_URL + '/api/' + endpoint + '_datatables',
+                url: BASE_URL + '/api/' + inventory_endpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
@@ -291,7 +293,7 @@
         }).then(function (result) {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: "{{ url('/api/sales') }}",
+                    url: BASE_URL + '/api/' + endpoint,
                     type: 'POST',
                     data: payload,
                     success: function (response) {

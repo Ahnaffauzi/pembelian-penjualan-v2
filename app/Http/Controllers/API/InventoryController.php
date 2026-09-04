@@ -99,7 +99,7 @@ class InventoryController extends Controller
                 $nestedData = $row;
                 $nestedData['action'] = '';
                 $nestedData['action'] .= '<div class="dropdown">';
-                $nestedData['action'] .= '<button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="dropdown">';
+                $nestedData['action'] .= '<button type="button" class="btn btn-sm btn-outline-dark rounded-2 px-2" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Inventory actions">';
                 $nestedData['action'] .= '<i class="fa fa-ellipsis-h"></i>';
                 $nestedData['action'] .= '</button>';
                 $nestedData['action'] .= '<ul class="dropdown-menu dropdown-menu-end">';

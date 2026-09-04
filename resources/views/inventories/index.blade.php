@@ -6,7 +6,7 @@
 
     <h1>Inventory</h1>
 
-    <button type="button" class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#inventoryModal">
+    <button type="button" class="btn btn-primary mb-3" id="add-button">
         Add Inventory
     </button>
     
@@ -76,7 +76,7 @@
 
 <script>
     // console.log('Inventory page loaded');
-    // let endpoint = 'inventories';
+    let endpoint = 'inventories';
 
     $(document).ready(function () {
         // Initialize DataTable
@@ -84,8 +84,7 @@
             processing:true,
             serverSide:true,
             ajax: {
-            url: "{{ url('/api/inventories_datatables') }}",
-                // url: BASE_URL + '/api/' + endpoint + '_datatables',
+                url: BASE_URL + '/api/' + endpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
@@ -111,7 +110,7 @@
         let id = $(this).data('id');
 
         $.ajax({
-            url: "{{ url('/api/inventories') }}/" + id,
+            url: BASE_URL + '/api/' + endpoint + '/' + id,
             type: 'GET',
             dataType: 'json',
             success: function (data) {
@@ -131,7 +130,7 @@
         e.preventDefault();
 
         $.ajax({
-            url: "{{ url('/api/inventories') }}",
+            url: BASE_URL + '/api/' + endpoint,
             type: 'POST',
             data: $(this).serialize(),
             success: function (response) {
@@ -157,7 +156,7 @@
         }).then(function (result) {
             if (result.isConfirmed) {
                 $.ajax({
-                    url: "{{ url('/api/inventories') }}/" + id,
+                    url: BASE_URL + '/api/' + endpoint + '/' + id,
                     type: 'DELETE',
                     success: function (response) {
                         $('#inventoriesTable').DataTable().ajax.reload();

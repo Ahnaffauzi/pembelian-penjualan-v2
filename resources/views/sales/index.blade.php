@@ -56,13 +56,15 @@
 @push('scripts')
 
 <script>
+    let endpoint = 'sales';
+
     $(document).ready(function () {
         $('#salesTable').DataTable({
             processing:true,
             serverSide:true,
             order: [[0, 'desc']],
             ajax: {
-                url: "{{ url('/api/sales_datatables') }}",
+                url: BASE_URL + '/api/' + endpoint + '_datatables',
                 type: 'POST',
                 data: function (d) {
                     @if(auth()->user()->hasRole('Sales'))
@@ -94,7 +96,7 @@
         let id = $(this).data('id');
 
         $.ajax({
-            url: "{{ url('/api/sales') }}/" + id,
+            url: BASE_URL + '/api/' + endpoint + '/' + id,
             type: 'GET',
             success: function (sale) {
                 $('#saleDetailHeader').html(`
