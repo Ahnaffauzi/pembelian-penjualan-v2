@@ -86,11 +86,14 @@
 @push('scripts')
 
 <script>
+    let sales_table;
+    let purchase_table;
+    
     let sales_endpoint = 'sales';
     let purchases_endpoint = 'purchases';
 
     $(document).ready(function () {
-        $('#salesReportTable').DataTable({
+        sales_table = $('#salesReportTable').DataTable({
             processing: true,
             serverSide: true,
             dom:
@@ -139,9 +142,19 @@
                 type: 'POST'
             },
             columns: [
-                { data: 'id', visible: false },
-                { data: 'number' },
-                { data: 'date',
+                {
+                    data: 'id',
+                    name: 'id',
+                    width: '5%',
+                    visible: false
+                },
+                {
+                    data: 'number',
+                    name: 'number'
+                },
+                {
+                    data: 'date',
+                    name: 'date',
                     render: function (data) {
                         return new Date(data).toLocaleDateString('id-ID', {
                             day: '2-digit',
@@ -150,19 +163,32 @@
                         });
                     }
                 },
-                { data: 'user_name' },
-                { data: 'total_qty' },
+                {
+                    data: 'user_name',
+                    name: 'user_name'
+                },
+                {
+                    data: 'total_qty',
+                    name: 'total_qty'
+                },
                 {
                     data: 'total_amount',
+                    name: 'total_amount',
                     render: function (data) {
                         return 'Rp ' + Number(data).toLocaleString('id-ID');
                     }
                 },
-                { data: 'action', orderable: false, searchable: false }
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-end'
+                }
             ]
         });
 
-        $('#purchaseReportTable').DataTable({
+        purchase_table = $('#purchaseReportTable').DataTable({
             processing: true,
             serverSide: true,
             dom:
@@ -211,9 +237,19 @@
                 type: 'POST'
             },
             columns: [
-                { data: 'id', visible: false },
-                { data: 'number' },
-                { data: 'date',
+                {
+                    data: 'id',
+                    name: 'id',
+                    width: '5%',
+                    visible: false
+                },
+                {
+                    data: 'number',
+                    name: 'number'
+                },
+                {
+                    data: 'date',
+                    name: 'date',
                     render: function (data) {
                         return new Date(data).toLocaleDateString('id-ID', {
                             day: '2-digit',
@@ -222,16 +258,33 @@
                         });
                     }
                 },
-                { data: 'user_name' },
-                { data: 'total_qty' },
+                {
+                    data: 'user_name',
+                    name: 'user_name'
+                },
+                {
+                    data: 'total_qty',
+                    name: 'total_qty'
+                },
                 {
                     data: 'total_amount',
+                    name: 'total_amount',
                     render: function (data) {
                         return 'Rp ' + Number(data).toLocaleString('id-ID');
                     }
                 },
-                { data: 'action', orderable: false, searchable: false }
+                {
+                    data: 'action',
+                    name: 'action',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-end'
+                }
             ]
+        });
+
+        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function () {
+            $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
         });
     });
 
