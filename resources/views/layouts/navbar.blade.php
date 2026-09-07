@@ -14,10 +14,10 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="{{ route('sales.create') }}">Create Sales</a>
+                            <a class="dropdown-item" href="{{ url('/sales/create') }}">Create Sales</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('sales.index') }}">Sales History</a>
+                            <a class="dropdown-item" href="{{ url('/sales') }}">Sales History</a>
                         </li>
                     </ul>
                 </div>
@@ -28,10 +28,10 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="{{ route('purchases.create') }}">Create Purchase</a>
+                            <a class="dropdown-item" href="{{ url('/purchases/create') }}">Create Purchase</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('purchases.index') }}">Purchase History</a>
+                            <a class="dropdown-item" href="{{ url('/purchases') }}">Purchase History</a>
                         </li>
                     </ul>
                 </div>
@@ -46,10 +46,10 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="{{ route('sales.create') }}">Create Sales</a>
+                            <a class="dropdown-item" href="{{ url('/sales/create') }}">Create Sales</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('sales.index') }}">Sales History</a>
+                            <a class="dropdown-item" href="{{ url('/sales') }}">Sales History</a>
                         </li>
                     </ul>
                 </div>
@@ -62,21 +62,21 @@
                     </a>
                     <ul class="dropdown-menu">
                         <li>
-                            <a class="dropdown-item" href="{{ route('purchases.create') }}">Create Purchase</a>
+                            <a class="dropdown-item" href="{{ url('/purchases/create') }}">Create Purchase</a>
                         </li>
                         <li>
-                            <a class="dropdown-item" href="{{ route('purchases.index') }}">Purchase History</a>
+                            <a class="dropdown-item" href="{{ url('/purchases') }}">Purchase History</a>
                         </li>
                     </ul>
                 </div>
             @endrole
 
             @role('Manager')
-                <a class="nav-link" href="/reports">Reports</a>
+                <a class="nav-link" href="{{ url('/reports') }}">Reports</a>
             @endrole
         </div>
 
-        <form method="POST" action="{{ route('logout') }}">
+        <form method="POST" action="{{ url('/logout') }}">
             @csrf
             <button type="submit" class="btn btn-outline-light btn-sm">
                 Logout

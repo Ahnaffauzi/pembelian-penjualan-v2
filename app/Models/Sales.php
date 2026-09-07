@@ -8,6 +8,7 @@ use App\Helpers\ModelHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Helpers\AutoNumberHelper;
 
 /**
  * @property string number
@@ -294,7 +295,7 @@ class Sales extends Model
         }
 
         if (empty($params['number'])) {
-            $params['number'] = self::generateNumber();
+            $params['number'] = AutoNumberHelper::initGenerateNumber('SLS');
         }
 
         if (empty($params['user_id'])) {
@@ -316,6 +317,33 @@ class Sales extends Model
         }
 
         $save = self::create($params);
+
+        // Inject saving details and deducting stock here
+        if (isset($params['items']) && is_array($params['items'])) {
+            foreach ($params['items'] as $item) {
+                $inventory = Inventories::find($item['inventory_id']);
+                
+                if ($inventory) {
+                    // Manual validation without try/catch
+                    if ($inventory->stock < $item['qty']) {
+                        DB::rollBack();
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => 'Insufficient stock for ' . $inventory->name
+                        ], 422);
+                    }
+                    $inventory->stock -= $item['qty'];
+                    $inventory->save();
+                    
+                    SalesDetails::create([
+                        'sales_id' => $save->id,
+                        'inventory_id' => $inventory->id,
+                        'qty' => $item['qty'],
+                        'price' => $inventory->price,
+                    ]);
+                }
+            }
+        }
 
         DB::commit();
         return response()->json([
@@ -346,71 +374,5 @@ class Sales extends Model
             'message' => 'Succesfully Approved Data',
             'data' => null
         ]);
-    }
-
-    public static function generateNumber()
-    {
-        $date = date('Ymd');
-        $count = self::whereDate('created_at', date('Y-m-d'))->count() + 1;
-
-        return 'SLS-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-    }
-
-    public static function createOrder($params, $request)
-    {
-        DB::beginTransaction();
-
-        try {
-            $userId = auth()->id() ?? ($params['user_id'] ?? null);
-
-            if (!$userId) {
-                throw new \Exception('User is required to create sale');
-            }
-
-            $sale = self::create([
-                'number' => self::generateNumber(),
-                'date' => $params['date'],
-                'user_id' => $userId,
-            ]);
-
-            foreach ($params['items'] as $item) {
-                $inventory = Inventories::findOrFail($item['inventory_id']);
-
-                Inventories::decreaseStock($inventory->id, $item['qty']);
-
-                SalesDetails::create([
-                    'sales_id' => $sale->id,
-                    'inventory_id' => $inventory->id,
-                    'qty' => $item['qty'],
-                    'price' => $inventory->price,
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Succesfully Created Order',
-                'data' => $sale,
-            ]);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ], 422);
-        }
-    }
-
-    public static function getByIdWithDetails($id, $params, $request)
-    {
-        // Get sales header
-        $sale = self::getById($id, $params, $request)->original;
-
-        // Get sales details
-        $sale->details = SalesDetails::getBySalesId($id, $request);
-
-        return response()->json($sale);
     }
 }

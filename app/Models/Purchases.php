@@ -309,6 +309,26 @@ class Purchases extends Model
 
         $save = self::create($params);
 
+        // Inject saving details and increase stock
+        if (isset($params['items']) && is_array($params['items'])) {
+            foreach ($params['items'] as $item) {
+                $inventory = Inventories::find($item['inventory_id']);
+                
+                if ($inventory) {
+                    // Increase stock by the purchased quantity
+                    $inventory->stock += $item['qty'];
+                    $inventory->save();;
+                    
+                    PurchaseDetails::create([
+                        'purchase_id' => $save->id,
+                        'inventory_id' => $inventory->id,
+                        'qty' => $item['qty'],
+                        'price' => $inventory->price,
+                    ]);
+                }
+            }
+        }
+
         DB::commit();
         return response()->json([
             'status' => 'success',
@@ -338,66 +358,5 @@ class Purchases extends Model
             'message' => 'Succesfully Approved Data',
             'data' => null
         ]);
-    }
-
-    public static function generateNumber()
-    {
-        $date = date('Ymd');
-        $count = self::whereDate('created_at', date('Y-m-d'))->count() + 1;
-
-        return 'PO-' . $date . '-' . str_pad($count, 4, '0', STR_PAD_LEFT);
-    }
-
-    public static function createOrder($params, $request)
-    {
-        DB::beginTransaction();
-
-        try {
-            $purchase = self::create([
-                'number' => self::generateNumber(),
-                'date' => $params['date'],
-                'user_id' => $params['user_id'],
-            ]);
-
-            foreach ($params['items'] as $item) {
-
-                $inventory = Inventories::findOrFail($item['inventory_id']);
-
-                Inventories::increaseStock($inventory, $item['qty']);
-
-                PurchaseDetails::create([
-                    'purchase_id' => $purchase->id,
-                    'inventory_id' => $item['inventory_id'],
-                    'qty' => $item['qty'],
-                    'price' => $inventory->price,
-                ]);
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Purchase Order Created Successfully',
-                'data' => $purchase,
-            ]);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'status' => 'error',
-                'message' => $e->getMessage(),
-            ], 422);
-        }
-    }
-
-    public static function getByIdWithDetails($id, $params, $request)
-    {
-        // Get purchase header
-        $purchase = self::getById($id, $params, $request)->original;
-
-        // Get purchase details
-        $purchase->details = PurchaseDetails::getByPurchaseId($id, $request);
-
-        return response()->json($purchase);
     }
 }
