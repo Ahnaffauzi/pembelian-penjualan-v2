@@ -8,20 +8,20 @@
 
     <ul class="nav nav-tabs mb-3">
         <li class="nav-item">
-            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#salesReport" type="button">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#sales-report" type="button">
                 Sales Report
             </button>
         </li>
         <li class="nav-item">
-            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#purchaseReport" type="button">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#purchase-report" type="button">
                 Purchase Report
             </button>
         </li>
     </ul>
 
     <div class="tab-content">
-        <div class="tab-pane fade show active" id="salesReport">
-            <table id="salesReportTable" class="table table-bordered">
+        <div class="tab-pane fade show active" id="sales-report">
+            <table id="sales-report_table" class="table table-bordered">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -36,8 +36,8 @@
             </table>
         </div>
 
-        <div class="tab-pane fade" id="purchaseReport">
-            <table id="purchaseReportTable" class="table table-bordered">
+        <div class="tab-pane fade" id="purchase-report">
+            <table id="purchase-report_table" class="table table-bordered">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="reportDetailModal" tabindex="-1">
+    <div class="modal fade" id="report-detail_modal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
@@ -62,7 +62,7 @@
                 </div>
 
                 <div class="modal-body">
-                    <div id="reportDetailHeader" class="mb-3"></div>
+                    <div id="report-detail_header" class="mb-3"></div>
 
                     <table class="table table-bordered">
                         <thead>
@@ -74,7 +74,7 @@
                                 <th>Subtotal</th>
                             </tr>
                         </thead>
-                        <tbody id="reportDetailItems"></tbody>
+                        <tbody id="report-detail_items"></tbody>
                     </table>
                 </div>
             </div>
@@ -86,14 +86,14 @@
 @push('scripts')
 
 <script>
-    let sales_table;
-    let purchase_table;
+    let salesTable;
+    let purchaseTable;
     
-    let sales_endpoint = 'sales';
-    let purchases_endpoint = 'purchases';
+    let salesEndpoint = 'sales';
+    let purchasesEndpoint = 'purchases';
 
     $(document).ready(function () {
-        sales_table = $('#salesReportTable').DataTable({
+        salesTable = $('#sales-report_table').DataTable({
             processing: true,
             serverSide: true,
             dom:
@@ -138,7 +138,7 @@
             scrollX: true,
             order: [[0, 'desc']],
             ajax: {
-                url: BASE_URL + '/api/' + sales_endpoint + '_datatables',
+                url: BASE_URL + '/api/' + salesEndpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
@@ -183,12 +183,25 @@
                     name: 'action',
                     orderable: false,
                     searchable: false,
-                    className: 'text-end'
+                    className: 'text-end',
+                    render: function (data, type, row) {
+                        let html = '';
+                        html += '<div class="dropdown">';
+                        html += '    <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="dropdown">';
+                        html += '        <i class="fa fa-ellipsis-h"></i>';
+                        html += '    </button>';
+                        html += '    <ul class="dropdown-menu dropdown-menu-end">';
+                        html += '        <li><a href="#" class="dropdown-item detail-sale" data-id="' + row.id + '">Detail</a></li>';
+                        html += '    </ul>';
+                        html += '</div>';
+
+                        return html;
+                    }
                 }
             ]
         });
 
-        purchase_table = $('#purchaseReportTable').DataTable({
+        purchaseTable = $('#purchase-report_table').DataTable({
             processing: true,
             serverSide: true,
             dom:
@@ -233,7 +246,7 @@
             scrollX: true,
             order: [[0, 'desc']],
             ajax: {
-                url: BASE_URL + '/api/' + purchases_endpoint + '_datatables',
+                url: BASE_URL + '/api/' + purchasesEndpoint + '_datatables',
                 type: 'POST'
             },
             columns: [
@@ -278,7 +291,20 @@
                     name: 'action',
                     orderable: false,
                     searchable: false,
-                    className: 'text-end'
+                    className: 'text-end',
+                    render: function (data, type, row) {
+                        let html = '';
+                        html += '<div class="dropdown">';
+                        html += '    <button type="button" class="btn btn-sm btn-outline-dark" data-bs-toggle="dropdown">';
+                        html += '        <i class="fa fa-ellipsis-h"></i>';
+                        html += '    </button>';
+                        html += '    <ul class="dropdown-menu dropdown-menu-end">';
+                        html += '        <li><a href="#" class="dropdown-item detail-purchase" data-id="' + row.id + '">Detail</a></li>';
+                        html += '    </ul>';
+                        html += '</div>';
+
+                        return html;
+                    }
                 }
             ]
         });
@@ -288,12 +314,14 @@
         });
     });
 
-    $(document).on('click', '.detail-sale', function () {
-        loadReportDetail(BASE_URL + '/api/' + sales_endpoint + '/' + $(this).data('id'));
+    $(document).on('click', '.detail-sale', function (e) {
+        e.preventDefault();
+        loadReportDetail(BASE_URL + '/api/' + salesEndpoint + '/' + $(this).data('id'));
     });
 
-    $(document).on('click', '.detail-purchase', function () {
-        loadReportDetail(BASE_URL + '/api/' + purchases_endpoint + '/' + $(this).data('id'));
+    $(document).on('click', '.detail-purchase', function (e) {
+        e.preventDefault();
+        loadReportDetail(BASE_URL + '/api/' + purchasesEndpoint + '/' + $(this).data('id'));
     });
 
     function loadReportDetail(url) {
@@ -301,11 +329,12 @@
             url: url,
             type: 'GET',
             success: function (record) {
-                $('#reportDetailHeader').html(`
-                    <strong>${record.number}</strong><br>
-                    Date: ${record.date}<br>
-                    Cashier: ${record.user_name ?? record.user_id}
-                `);
+                let header = '';
+                header += '<strong>' + record.number + '</strong><br>';
+                header += 'Date: ' + record.date + '<br>';
+                header += 'Cashier: ' + (record.user_name ?? record.user_id);
+
+                $('#report-detail_header').html(header);
 
                 let html = '';
                 let total = 0;
@@ -314,26 +343,22 @@
                     let subtotal = item.qty * item.price;
                     total += subtotal;
 
-                    html += `
-                        <tr>
-                            <td>${item.inventory_code}</td>
-                            <td>${item.inventory_name}</td>
-                            <td>${item.qty}</td>
-                            <td>Rp ${Number(item.price).toLocaleString('id-ID')}</td>
-                            <td>Rp ${Number(subtotal).toLocaleString('id-ID')}</td>
-                        </tr>
-                    `;
+                    html += '<tr>';
+                    html += '    <td>' + item.inventory_code + '</td>';
+                    html += '    <td>' + item.inventory_name + '</td>';
+                    html += '    <td>' + item.qty + '</td>';
+                    html += '    <td>Rp ' + Number(item.price).toLocaleString('id-ID') + '</td>';
+                    html += '    <td>Rp ' + Number(subtotal).toLocaleString('id-ID') + '</td>';
+                    html += '</tr>';
                 });
 
-                html += `
-                    <tr>
-                        <td colspan="4" class="text-end"><strong>Total</strong></td>
-                        <td><strong>Rp ${Number(total).toLocaleString('id-ID')}</strong></td>
-                    </tr>
-                `;
+                html += '<tr>';
+                html += '    <td colspan="4" class="text-end"><strong>Total</strong></td>';
+                html += '    <td><strong>Rp ' + Number(total).toLocaleString('id-ID') + '</strong></td>';
+                html += '</tr>';
 
-                $('#reportDetailItems').html(html);
-                $('#reportDetailModal').modal('show');
+                $('#report-detail_items').html(html);
+                $('#report-detail_modal').modal('show');
             }
         });
     }

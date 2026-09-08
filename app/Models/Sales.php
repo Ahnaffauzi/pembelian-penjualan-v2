@@ -103,10 +103,8 @@ class Sales extends Model
 				'date' => ['column' => $model->table.'.date', 'alias' => 'date', 'type' => 'date'],
 				'user_id' => ['column' => $model->table.'.user_id', 'alias' => 'user_id', 'type' => 'int'],
 
-                // Additional fields from users table
                 'user_name' => ['column' => 'users.name', 'alias' => 'user_name', 'type' => 'string'],
 
-                // Additional fields for total quantity and total amount
                 'total_qty' => [
                     'column' => 'COALESCE(SUM(sales_details.qty), 0)',
                     'alias' => 'total_qty',
@@ -149,6 +147,16 @@ class Sales extends Model
     public static function datatables($start, $length, $order, $dir, $search, $filter = [])
     {
         $schema = self::mapSchema();
+        $group_by = [
+            'sales.id',
+            'sales.number',
+            'sales.date',
+            'sales.user_id',
+            'sales.deleted_at',
+            'sales.created_at',
+            'sales.updated_at',
+            'users.name',
+        ];
 
         $totalData = self::count();
 
@@ -161,9 +169,9 @@ class Sales extends Model
         
         //FILTER
 
-        $totalFiltered = $qry->count();
-
         if (empty($search)) {
+            $count_qry = clone $qry;
+            $totalFiltered = $count_qry->groupBy($group_by)->get()->count();
             
             if ($length > 0) {
                 $qry->skip($start)
@@ -175,17 +183,14 @@ class Sales extends Model
             }
 
         } else {
-            foreach (array_values($schema['field']) as $key => $val) {
-                if ($key < 1) {
-                    $qry->whereRaw('('.$val['column'].'::varchar(255) ILIKE \'%'.$search.'%\'');
-                } else if (count(array_values($schema['field'])) == ($key + 1)) {
-                    $qry->orWhereRaw($val['column'].'::varchar(255) ILIKE \'%'.$search.'%\')');
-                } else {
-                    $qry->orWhereRaw($val['column'].'::varchar(255) ILIKE \'%'.$search.'%\'');
-                }
-            }
+            $qry->where(function ($query) use ($search) {
+                $query->whereRaw('sales.number::varchar(255) ILIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('sales.date::varchar(255) ILIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('users.name::varchar(255) ILIKE ?', ['%'.$search.'%']);
+            });
 
-            $totalFiltered = $qry->count();
+            $count_qry = clone $qry;
+            $totalFiltered = $count_qry->groupBy($group_by)->get()->count();
 
             if ($length > 0) {
                 $qry->skip($start)
@@ -197,8 +202,7 @@ class Sales extends Model
             }
         }
 
-        // Group by sales.id and users.name to avoid duplicate rows due to the join with sales_details
-        $qry->groupBy('sales.id', 'users.name');
+        $qry->groupBy($group_by);
 
         return [
             'data' => $qry->get(),
@@ -242,15 +246,23 @@ class Sales extends Model
     public static function getById($id, $params = [], $request = null)
     {
         $models = new self;
-
         $append = [];
-
         $schema = self::mapSchema();
         
         $db = ModelHelper::select($schema['field'], $request, __CLASS__)->where($models->table.'.id', $id);
-        
         ModelHelper::join($schema['join'], $request, $db);
         
+        $db->groupBy(
+            'sales.id',
+            'sales.number',
+            'sales.date',
+            'sales.user_id',
+            'sales.deleted_at',
+            'sales.created_at',
+            'sales.updated_at',
+            'users.name'
+        );
+
         return response()->json($db->first());
     }
 
@@ -289,23 +301,72 @@ class Sales extends Model
         DB::beginTransaction();
 
         $filename = null;
+        $items = [];
 
         if (isset($params['_token']) && $params['_token']) {
             unset($params['_token']);
         }
 
-        if (empty($params['number'])) {
-            $params['number'] = AutoNumberHelper::initGenerateNumber('SLS');
+        if (isset($params['items']) && is_array($params['items'])) {
+            $items = $params['items'];
+            unset($params['items']);
         }
 
         if (empty($params['user_id'])) {
             $params['user_id'] = auth()->id();
         }
 
+        if (empty($params['date'])) {
+            $params['date'] = date('Y-m-d');
+        }
+
         if (isset($params['id']) && $params['id']) {
             $old = self::getById($params['id'])->original;
 
+            if (empty($params['number'])) {
+                unset($params['number']);
+            }
+
             $update = self::where('id', $params['id'])->update($params);
+
+            if ($items) {
+                $old_details = SalesDetails::where('sales_id', $params['id'])->get();
+
+                foreach ($old_details as $detail) {
+                    $inventory = Inventories::find($detail->inventory_id);
+
+                    if ($inventory) {
+                        $inventory->stock += $detail->qty;
+                        $inventory->save();
+                    }
+                }
+
+                SalesDetails::where('sales_id', $params['id'])->delete();
+
+                foreach ($items as $item) {
+                    $inventory = Inventories::find($item['inventory_id']);
+
+                    if ($inventory) {
+                        if ($inventory->stock < $item['qty']) {
+                            DB::rollBack();
+                            return response()->json([
+                                'status' => 'error',
+                                'message' => 'Insufficient stock for ' . $inventory->name
+                            ], 422);
+                        }
+
+                        $inventory->stock -= $item['qty'];
+                        $inventory->save();
+
+                        SalesDetails::create([
+                            'sales_id' => $params['id'],
+                            'inventory_id' => $inventory->id,
+                            'qty' => $item['qty'],
+                            'price' => $item['price'] ?? $inventory->price,
+                        ]);
+                    }
+                }
+            }
 
             DB::commit();
             
@@ -316,15 +377,17 @@ class Sales extends Model
             ]);
         }
 
+        if (empty($params['number'])) {
+            $params['number'] = AutoNumberHelper::initGenerateNumber('SLS');
+        }
+
         $save = self::create($params);
 
-        // Inject saving details and deducting stock here
-        if (isset($params['items']) && is_array($params['items'])) {
-            foreach ($params['items'] as $item) {
+        if ($items) {
+            foreach ($items as $item) {
                 $inventory = Inventories::find($item['inventory_id']);
                 
                 if ($inventory) {
-                    // Manual validation without try/catch
                     if ($inventory->stock < $item['qty']) {
                         DB::rollBack();
                         return response()->json([
@@ -339,7 +402,7 @@ class Sales extends Model
                         'sales_id' => $save->id,
                         'inventory_id' => $inventory->id,
                         'qty' => $item['qty'],
-                        'price' => $inventory->price,
+                        'price' => $item['price'] ?? $inventory->price,
                     ]);
                 }
             }
@@ -357,7 +420,24 @@ class Sales extends Model
     {
         // $old = self::getById($id)->original;
 
+        DB::beginTransaction();
+
+        $details = SalesDetails::where('sales_id', $id)->get();
+
+        foreach ($details as $detail) {
+            $inventory = Inventories::find($detail->inventory_id);
+
+            if ($inventory) {
+                $inventory->stock += $detail->qty;
+                $inventory->save();
+            }
+        }
+
+        SalesDetails::where('sales_id', $id)->delete();
+
         self::where('id', $id)->delete();
+
+        DB::commit();
 
         return response()->json([
             'status' => 'success',

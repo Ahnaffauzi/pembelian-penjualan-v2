@@ -8,6 +8,7 @@ use App\Helpers\ModelHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Helpers\AutoNumberHelper;
 
 /**
  * @property string number
@@ -102,10 +103,8 @@ class Purchases extends Model
 				'date' => ['column' => $model->table.'.date', 'alias' => 'date', 'type' => 'date'],
 				'user_id' => ['column' => $model->table.'.user_id', 'alias' => 'user_id', 'type' => 'int'],
 
-                // Additional fields from users table
                 'user_name' => ['column' => 'users.name', 'alias' => 'user_name', 'type' => 'string'],
 
-                // Additional fields from purchase_details table
                 'total_qty' => [
                     'column' => 'COALESCE(SUM(purchase_details.qty), 0)',
                     'alias' => 'total_qty',
@@ -148,6 +147,16 @@ class Purchases extends Model
     public static function datatables($start, $length, $order, $dir, $search, $filter = [])
     {
         $schema = self::mapSchema();
+        $group_by = [
+            'purchases.id',
+            'purchases.number',
+            'purchases.date',
+            'purchases.user_id',
+            'purchases.deleted_at',
+            'purchases.created_at',
+            'purchases.updated_at',
+            'users.name',
+        ];
 
         $totalData = self::count();
 
@@ -160,9 +169,9 @@ class Purchases extends Model
         
         //FILTER
 
-        $totalFiltered = $qry->count();
-
         if (empty($search)) {
+            $count_qry = clone $qry;
+            $totalFiltered = $count_qry->groupBy($group_by)->get()->count();
             
             if ($length > 0) {
                 $qry->skip($start)
@@ -174,17 +183,14 @@ class Purchases extends Model
             }
 
         } else {
-            foreach (array_values($schema['field']) as $key => $val) {
-                if ($key < 1) {
-                    $qry->whereRaw('('.$val['column'].'::varchar(255) ILIKE \'%'.$search.'%\'');
-                } else if (count(array_values($schema['field'])) == ($key + 1)) {
-                    $qry->orWhereRaw($val['column'].'::varchar(255) ILIKE \'%'.$search.'%\')');
-                } else {
-                    $qry->orWhereRaw($val['column'].'::varchar(255) ILIKE \'%'.$search.'%\'');
-                }
-            }
+            $qry->where(function ($query) use ($search) {
+                $query->whereRaw('purchases.number::varchar(255) ILIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('purchases.date::varchar(255) ILIKE ?', ['%'.$search.'%'])
+                    ->orWhereRaw('users.name::varchar(255) ILIKE ?', ['%'.$search.'%']);
+            });
 
-            $totalFiltered = $qry->count();
+            $count_qry = clone $qry;
+            $totalFiltered = $count_qry->groupBy($group_by)->get()->count();
 
             if ($length > 0) {
                 $qry->skip($start)
@@ -196,8 +202,7 @@ class Purchases extends Model
             }
         }
 
-        // Group by purchases.id and users.name to ensure correct aggregation of total_qty and total_amount
-        $qry->groupBy('purchases.id', 'users.name');
+        $qry->groupBy($group_by);
 
         return [
             'data' => $qry->get(),
@@ -249,6 +254,17 @@ class Purchases extends Model
         $db = ModelHelper::select($schema['field'], $request, __CLASS__)->where($models->table.'.id', $id);
         
         ModelHelper::join($schema['join'], $request, $db);
+
+        $db->groupBy(
+            'purchases.id',
+            'purchases.number',
+            'purchases.date',
+            'purchases.user_id',
+            'purchases.deleted_at',
+            'purchases.created_at',
+            'purchases.updated_at',
+            'users.name'
+        );
         
         return response()->json($db->first());
     }
@@ -288,15 +304,64 @@ class Purchases extends Model
         DB::beginTransaction();
 
         $filename = null;
+        $items = [];
 
         if (isset($params['_token']) && $params['_token']) {
             unset($params['_token']);
         }
 
+        if (isset($params['items']) && is_array($params['items'])) {
+            $items = $params['items'];
+            unset($params['items']);
+        }
+
+        if (empty($params['user_id'])) {
+            $params['user_id'] = auth()->id();
+        }
+
+        if (empty($params['date'])) {
+            $params['date'] = date('Y-m-d');
+        }
+
         if (isset($params['id']) && $params['id']) {
             $old = self::getById($params['id'])->original;
 
+            if (empty($params['number'])) {
+                unset($params['number']);
+            }
+
             $update = self::where('id', $params['id'])->update($params);
+
+            if ($items) {
+                $old_details = PurchaseDetails::where('purchase_id', $params['id'])->get();
+
+                foreach ($old_details as $detail) {
+                    $inventory = Inventories::find($detail->inventory_id);
+
+                    if ($inventory) {
+                        $inventory->stock -= $detail->qty;
+                        $inventory->save();
+                    }
+                }
+
+                PurchaseDetails::where('purchase_id', $params['id'])->delete();
+
+                foreach ($items as $item) {
+                    $inventory = Inventories::find($item['inventory_id']);
+
+                    if ($inventory) {
+                        $inventory->stock += $item['qty'];
+                        $inventory->save();
+
+                        PurchaseDetails::create([
+                            'purchase_id' => $params['id'],
+                            'inventory_id' => $inventory->id,
+                            'qty' => $item['qty'],
+                            'price' => $item['price'] ?? $inventory->price,
+                        ]);
+                    }
+                }
+            }
 
             DB::commit();
             
@@ -307,15 +372,17 @@ class Purchases extends Model
             ]);
         }
 
+        if (empty($params['number'])) {
+            $params['number'] = AutoNumberHelper::initGenerateNumber('PO');
+        }
+
         $save = self::create($params);
 
-        // Inject saving details and increase stock
-        if (isset($params['items']) && is_array($params['items'])) {
-            foreach ($params['items'] as $item) {
+        if ($items) {
+            foreach ($items as $item) {
                 $inventory = Inventories::find($item['inventory_id']);
                 
                 if ($inventory) {
-                    // Increase stock by the purchased quantity
                     $inventory->stock += $item['qty'];
                     $inventory->save();;
                     
@@ -323,7 +390,7 @@ class Purchases extends Model
                         'purchase_id' => $save->id,
                         'inventory_id' => $inventory->id,
                         'qty' => $item['qty'],
-                        'price' => $inventory->price,
+                        'price' => $item['price'] ?? $inventory->price,
                     ]);
                 }
             }
@@ -341,7 +408,24 @@ class Purchases extends Model
     {
         // $old = self::getById($id)->original;
 
+        DB::beginTransaction();
+
+        $details = PurchaseDetails::where('purchase_id', $id)->get();
+
+        foreach ($details as $detail) {
+            $inventory = Inventories::find($detail->inventory_id);
+
+            if ($inventory) {
+                $inventory->stock -= $detail->qty;
+                $inventory->save();
+            }
+        }
+
+        PurchaseDetails::where('purchase_id', $id)->delete();
+
         self::where('id', $id)->delete();
+
+        DB::commit();
 
         return response()->json([
             'status' => 'success',

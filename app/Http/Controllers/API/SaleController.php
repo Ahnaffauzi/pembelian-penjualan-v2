@@ -5,15 +5,25 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Sales;
 use Illuminate\Http\Request;
+use App\Models\SalesDetails;
 
 class SaleController extends Controller
 {
-    public function get(Request $request, $id)
+    public function get(Request $request, $id = null)
     {
         $params = $request->all();
 
         if ($id != null) {
-            $res = Sales::getByIdWithDetails($id, $params, $request);
+            $sale = Sales::getById($id, $params, $request)->original;
+
+            $detail_params = [
+                'all' => true,
+                'sales_id' => $id,
+            ];
+
+            $sale->details = SalesDetails::getAllResult($detail_params, $request)->original;
+
+            return response()->json($sale);
         } else if (isset($params['all']) && $params['all']) {
             $res = Sales::getAllResult($params, $request);
         } else {
@@ -26,10 +36,6 @@ class SaleController extends Controller
     public function post(Request $request)
     {
         $params = $request->all();
-
-        if (isset($params['items'])) {
-            return Sales::createOrder($params, $request);
-        }
 
         return Sales::createOrUpdate($params, $request->method(), $request);
     }

@@ -27,13 +27,10 @@ Route::middleware(['auth', 'role:SuperAdmin'])->group(function () {
 
 Route::middleware(['auth', 'role:SuperAdmin|Sales'])->group(function () {
     Route::get('/sales', [SaleController::class, 'index'])->name('sales.index');
-    Route::get('/sales/create', [SaleController::class, 'create'])->name('sales.create');
 });
 
 Route::middleware(['auth', 'role:SuperAdmin|Purchase'])->group(function () {
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
-    Route::get('/purchases/create', [PurchaseController::class, 'create'])->name('purchases.create');
-
 });
 
 Route::middleware(['auth', 'role:SuperAdmin|Manager'])->group(function () {

@@ -315,17 +315,4 @@ class PurchaseDetails extends Model
             'data' => null
         ]);
     }
-
-    public static function getByPurchaseId($purchaseId, $request = null)
-    {
-        $schema = self::mapSchema();
-
-        // Generate select query from ModelHelper
-        $db = ModelHelper::select($schema['field'], $request, __CLASS__)->where('purchase_details.purchase_id', $purchaseId);
-        
-        // Add join for invetories table to get inventory_code and inventory_name
-        ModelHelper::join($schema['join'], $request, $db);
-
-        return $db->get();
-    }
 }

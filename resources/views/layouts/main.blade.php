@@ -62,25 +62,24 @@
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
         <script>
-            // Global function to fetch and build inventory dropdowns
             function getInventories(config) {
                 let element = config.element;
-                let selected_val = config.selected_val || '';
+                let selectedVal = config.selectedVal || '';
 
                 $.ajax({
                     url: BASE_URL + '/api/inventories_datatables',
                     type: 'POST',
                     data: {
                         start: 0,
-                        length: -1, // Get all data
+                        length: -1,
                         search: '',
-                        order: [{column: 1, dir: 'asc'}] // Order by code/name
+                        order: [[0, 'desc']]
                     },
                     success: function (response) {
                         let html = '<option value="">-- Select Item --</option>';
                         
                         response.data.forEach(function (item) {
-                            let selected = (selected_val == item.id) ? 'selected' : '';
+                            let selected = (selectedVal == item.id) ? 'selected' : '';
                             html += '<option value="' + item.id + '" data-price="' + item.price + '" data-stock="' + item.stock + '" data-code="' + item.code + '" ' + selected + '>';
                             html += item.code + ' - ' + item.name;
                             html += '</option>';
@@ -88,8 +87,8 @@
 
                         $(element).html(html);
                         
-                        if (selected_val) {
-                            $(element).val(selected_val).trigger('change');
+                        if (selectedVal) {
+                            $(element).val(selectedVal).trigger('change');
                         }
                     }
                 });

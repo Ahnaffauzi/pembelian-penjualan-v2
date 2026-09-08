@@ -10,7 +10,7 @@
         Add Inventory
     </button>
     
-    <table id="inventoriesTable" class="table table-bordered">
+    <table id="inventories-table" class="table table-bordered">
 
         <thead>
             <tr>
@@ -25,13 +25,13 @@
 
     </table>
 
-    <div class="modal fade" id="inventoryModal" tabindex="-1">
+    <div class="modal fade" id="inventory-modal" tabindex="-1">
         <div class="modal-dialog">
-            <form id="inventoryForm" class="modal-content">
+            <form id="inventory-form" class="modal-content">
                 @csrf
 
                 <div class="modal-header">
-                    <h5 class="modal-title" id="formModalTitle">Add Inventory</h5>
+                    <h5 class="modal-title" id="form-modal_title">Add Inventory</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -80,7 +80,7 @@
     let endpoint = 'inventories';
 
     function drawDatatable() {
-        dt = $('#inventoriesTable').addClass('nowrap').DataTable({
+        dt = $('#inventories-table').addClass('nowrap').DataTable({
             dom:
                 "<'row mb-3'<'col-md-6'B><'col-md-6'f>>" +
                 "<'row'<'col-12'tr>>" +
@@ -168,10 +168,10 @@
     });
 
     $(document).on('click', '#add-button', function () {
-        $('#inventoryForm')[0].reset();
+        $('#inventory-form')[0].reset();
         $('#input-id').val('');
-        $('#formModalTitle').text('Add Inventory');
-        $('#inventoryModal').modal('show');
+        $('#form-modal_title').text('Add Inventory');
+        $('#inventory-modal').modal('show');
     });
 
     $(document).on('click', '.edit-data', function (e) {
@@ -190,13 +190,13 @@
                 $('#input-price').val(data.price);
                 $('#input-stock').val(data.stock);
 
-                $('#formModalTitle').text('Edit Inventory');
-                $('#inventoryModal').modal('show');
+                $('#form-modal_title').text('Edit Inventory');
+                $('#inventory-modal').modal('show');
             }
         });
     });
 
-    $('#inventoryForm').on('submit', function (e) {
+    $('#inventory-form').on('submit', function (e) {
         e.preventDefault();
 
         $.ajax({
@@ -204,8 +204,8 @@
             type: 'POST',
             data: $(this).serialize(),
             success: function (response) {
-                $('#inventoryModal').modal('hide');
-                $('#inventoryForm')[0].reset();
+                $('#inventory-modal').modal('hide');
+                $('#inventory-form')[0].reset();
                 dt.ajax.reload(null, false);
 
                 Swal.fire('Success', response.message, 'success');

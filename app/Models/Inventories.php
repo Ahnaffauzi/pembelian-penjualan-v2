@@ -304,29 +304,4 @@ class Inventories extends Model
             'data' => null
         ]);
     }
-
-    public static function increaseStock($inventory, $qty)
-    {
-        $inventory = self::findOrFail($inventory->id);
-        $inventory->stock += $qty;
-        $inventory->save();
-
-        return $inventory;
-    }
-
-    public static function decreaseStock($inventoryId, $qty)
-    {
-        $inventory = self::findOrFail($inventoryId);
-
-        if ($inventory->stock < $qty) {
-            throw new \Exception('Insufficient stock');
-        }
-
-        $inventory->stock -= $qty;
-        $inventory->save();
-
-        return $inventory;
-    }
-
-    
 }

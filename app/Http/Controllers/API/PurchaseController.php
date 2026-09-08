@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Purchases;
 use Illuminate\Http\Request;
+use App\Models\PurchaseDetails;
 
 class PurchaseController extends Controller
 {
@@ -13,7 +14,16 @@ class PurchaseController extends Controller
         $params = $request->all();
 
         if ($id != null) {
-            $res = Purchases::getByIdWithDetails($id, $params, $request);
+            $purchase = Purchases::getById($id, $params, $request)->original;
+
+            $detail_params = [
+                'all' => true,
+                'purchase_id' => $id,
+            ];
+
+            $purchase->details = PurchaseDetails::getAllResult($detail_params, $request)->original;
+
+            return response()->json($purchase);
         } else if (isset($params['all']) && $params['all']) {
             $res = Purchases::getAllResult($params, $request);
         } else {
@@ -26,9 +36,7 @@ class PurchaseController extends Controller
     public function post(Request $request)
     {
         $params = $request->all();
-        if (isset($params['items'])) {
-            return Purchases::createOrder($params, $request);
-        }
+
         return Purchases::createOrUpdate($params, $request->method(), $request);
     }
 
